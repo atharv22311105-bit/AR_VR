@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="WebAR Solar System — TY College Project. Point your mobile camera at a Hiro marker to explore interactive 3D planets.">
+  <title>WebAR Solar System | TY Project</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- A-Frame 1.4.2 -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+  <!-- AR.js for A-Frame (marker-based) -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     SPLASH / LANDING SCREEN
+     ══════════════════════════════════════════════════════════ -->
+<section id="splash" aria-label="Welcome screen">
+  <div class="splash-icon">🪐</div>
+
+  <h1>WebAR Solar System</h1>
+  <p class="subtitle">
+    TY College Project — Point your mobile camera at the
+    <strong>Hiro marker</strong> to explore all 8 planets in real-world AR.
+  </p>
+
+  <!-- How to use steps -->
+  <div class="steps-card" role="list" aria-label="Instructions">
+    <div class="step-row" role="listitem">
+      <div class="step-num" aria-hidden="true">1</div>
+      <span>Print or open the <strong>Hiro marker</strong> (see README)</span>
+    </div>
+    <div class="step-row" role="listitem">
+      <div class="step-num" aria-hidden="true">2</div>
+      <span>Tap <strong>Launch AR</strong> and allow camera access</span>
+    </div>
+    <div class="step-row" role="listitem">
+      <div class="step-num" aria-hidden="true">3</div>
+      <span>Point camera at the marker — planets appear!</span>
+    </div>
+    <div class="step-row" role="listitem">
+      <div class="step-num" aria-hidden="true">4</div>
+      <span><strong>Tap any planet</strong> to read its facts &amp; stats</span>
+    </div>
+  </div>
+
+  <button id="start-btn" aria-label="Launch AR experience">✦ Launch AR Experience</button>
+
+  <div id="not-supported-msg" role="alert">
+    ⚠️ Camera access is unavailable.<br>
+    Open this page in <strong>Chrome on Android</strong> or
+    <strong>Safari on iOS 16+</strong> over <strong>HTTPS</strong>.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     AR SCENE WRAPPER
+     ══════════════════════════════════════════════════════════ -->
+<div id="ar-scene-wrapper" aria-label="Augmented Reality scene">
+
+  <!-- A-Frame Scene with AR.js Marker Tracking -->
+  <a-scene
+    id="ar-scene"
+    embedded
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; colorManagement: true; antialias: true;"
+  >
+    <!-- ── Assets ── -->
+    <a-assets>
+      <!-- Saturn rings texture (inline data URI for offline use) -->
+    </a-assets>
+
+    <!-- ── Camera ── -->
+    <a-entity camera></a-entity>
+
+    <!-- ══════════════════════════════════════════════════════
+         HIRO MARKER — entire solar system lives inside
+         ══════════════════════════════════════════════════════ -->
+    <a-marker
+      id="hiro-marker"
+      preset="hiro"
+      raycaster="objects: [data-planet]"
+      emitevents="true"
+    >
+
+      <!-- ── Ambient + Sun Light ── -->
+      <a-light type="ambient"  color="#0d0d22" intensity="0.6"></a-light>
+      <a-light type="point"    position="0 0.5 0" color="#FFF5CC" intensity="4"
+               distance="14" decay="2"></a-light>
+
+      <!-- ══════════════════════════════════════════════════
+           SUN  (centre, slightly above marker plane)
+           ══════════════════════════════════════════════════ -->
+      <a-sphere id="sun"
+        data-planet="sun"
+        planet-tap="planet: sun"
+        position="0 0.5 0"
+        radius="0.38"
+        material="color: #FFD700; emissive: #FF8C00; emissiveIntensity: 1.2; shader: flat"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear"
+        cursor-listener
+      ></a-sphere>
+
+      <!-- Sun glow halo -->
+      <a-sphere position="0 0.5 0" radius="0.46"
+        material="color: #FFA500; opacity: 0.14; transparent: true; shader: flat;
+                  blending: additive; depthWrite: false"
+        animation="property: scale; from: 1 1 1; to: 1.08 1.08 1.08; loop: true;
+                   dir: alternate; dur: 1600; easing: easeInOutSine">
+      </a-sphere>
+
+      <!-- ══════════════════════════════════════════════════
+           MERCURY  — orbit r=0.75
+           ══════════════════════════════════════════════════ -->
+      <!-- Orbit ring -->
+      <a-ring radius-inner="0.74" radius-outer="0.755" color="#555"
+        rotation="-90 0 0"
+        material="opacity: 0.25; transparent: true; shader: flat"
+        position="0 0.02 0">
+      </a-ring>
+      <!-- Orbital pivot + planet -->
+      <a-entity orbit="duration: 3500" position="0 0.5 0">
+        <a-sphere
+          data-planet="mercury"
+          planet-tap="planet: mercury"
+          position="0.75 0 0"
+          radius="0.055"
+          material="color: #AAAAAA; emissive: #555; emissiveIntensity: 0.35"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 5000; easing: linear"
+        ></a-sphere>
+      </a-entity>
+
+      <!-- ══════════════════════════════════════════════════
+           VENUS  — orbit r=1.08
+           ══════════════════════════════════════════════════ -->
+      <a-ring radius-inner="1.07" radius-outer="1.085" color="#555"
+        rotation="-90 0 0"
+        material="opacity: 0.25; transparent: true; shader: flat"
+        position="0 0.02 0">
+      </a-ring>
+      <a-entity orbit="duration: 6000" position="0 0.5 0">
+        <a-sphere
+          data-planet="venus"
+          planet-tap="planet: venus"
+          position="1.08 0 0"
+          radius="0.095"
+          material="color: #E8D5A3; emissive: #C4A352; emissiveIntensity: 0.3"
+          animation="property: rotation; to: 0 -360 0; loop: true; dur: 9000; easing: linear"
+        ></a-sphere>
+      </a-entity>
+
+      <!-- ══════════════════════════════════════════════════
+           EARTH + MOON  — orbit r=1.45
+           ══════════════════════════════════════════════════ -->
+      <a-ring radius-inner="1.44" radius-outer="1.455" color="#555"
+        rotation="-90 0 0"
+        material="opacity: 0.25; transparent: true; shader: flat"
+        position="0 0.02 0">
+      </a-ring>
+      <a-entity orbit="duration: 9500" position="0 0.5 0">
+        <a-entity position="1.45 0 0">
+          <!-- Earth -->
+          <a-sphere
+            data-planet="earth"
+            planet-tap="planet: earth"
+            radius="0.11"
+            material="color: #3A8F5F; emissive: #1E5FA0; emissiveIntensity: 0.4"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear"
+          ></a-sphere>
+          <!-- Moon pivot -->
+          <a-entity animation="property: rotation; to: 0 360 0; loop: true; dur: 2800; easing: linear">
+            <a-sphere position="0.2 0 0" radius="0.028"
+              material="color: #CCCCCC; emissive: #888; emissiveIntensity: 0.2">
+            </a-sphere>
+          </a-entity>
+        </a-entity>
+      </a-entity>
+
+      <!-- ══════════════════════════════════════════════════
+           MARS  — orbit r=1.88
+           ══════════════════════════════════════════════════ -->
+      <a-ring radius-inner="1.87" radius-outer="1.885" color="#555"
+        rotation="-90 0 0"
+        material="opacity: 0.25; transparent: true; shader: flat"
+        position="0 0.02 0">
+      </a-ring>
+      <a-entity orbit="duration: 15000" position="0 0.5 0">
+        <a-sphere
+          data-planet="mars"
+          planet-tap="planet: mars"
+          position="1.88 0 0"
+          radius="0.08"
+          material="color: #CC3300; emissive: #AA1100; emissiveIntensity: 0.38"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 3300; easing: linear"
+        ></a-sphere>
+      </a-entity>
+
+      <!-- ══════════════════════════════════════════════════
+           JUPITER  — orbit r=2.55
+           ══════════════════════════════════════════════════ -->
+      <a-ring radius-inner="2.54" radius-outer="2.555" color="#555"
+        rotation="-90 0 0"
+        material="opacity: 0.2; transparent: true; shader: flat"
+        position="0 0.02 0">
+      </a-ring>
+      <a-entity orbit="duration: 26000" position="0 0.5 0">
+        <a-sphere
+          data-planet="jupiter"
+          planet-tap="planet: jupiter"
+          position="2.55 0 0"
+          radius="0.24"
+          material="color: #C88B3A; emissive: #885522; emissiveIntensity: 0.2"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 1800; easing: linear"
+        ></a-sphere>
+      </a-entity>
+
+      <!-- ══════════════════════════════════════════════════
+           SATURN + RINGS  — orbit r=3.35
+           ══════════════════════════════════════════════════ -->
+      <a-ring radius-inner="3.34" radius-outer="3.355" color="#555"
+        rotation="-90 0 0"
+        material="opacity: 0.18; transparent: true; shader: flat"
+        position="0 0.02 0">
+      </a-ring>
+      <a-entity orbit="duration: 38000" position="0 0.5 0">
+        <a-entity position="3.35 0 0"
+          data-planet="saturn"
+          planet-tap="planet: saturn"
+        >
+          <!-- Saturn body -->
+          <a-sphere
+            radius="0.20"
+            material="color: #EADDCA; emissive: #A07840; emissiveIntensity: 0.22"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 2000; easing: linear"
+          ></a-sphere>
+          <!-- Saturn ring disc -->
+          <a-ring radius-inner="0.27" radius-outer="0.50"
+            color="#B8966E"
+            rotation="-70 15 0"
+            material="opacity: 0.75; transparent: true; side: double; shader: flat">
+          </a-ring>
+          <!-- Faint outer ring -->
+          <a-ring radius-inner="0.51" radius-outer="0.60"
+            color="#9B8060"
+            rotation="-70 15 0"
+            material="opacity: 0.35; transparent: true; side: double; shader: flat">
+          </a-ring>
+        </a-entity>
+      </a-entity>
+
+      <!-- ══════════════════════════════════════════════════
+           URANUS  — orbit r=4.1
+           ══════════════════════════════════════════════════ -->
+      <a-ring radius-inner="4.09" radius-outer="4.105" color="#555"
+        rotation="-90 0 0"
+        material="opacity: 0.15; transparent: true; shader: flat"
+        position="0 0.02 0">
+      </a-ring>
+      <a-entity orbit="duration: 50000" position="0 0.5 0">
+        <a-sphere
+          position="4.1 0 0"
+          radius="0.17"
+          material="color: #7FDBFF; emissive: #1a8fa8; emissiveIntensity: 0.3"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 2300; easing: linear"
+        ></a-sphere>
+      </a-entity>
+
+      <!-- ══════════════════════════════════════════════════
+           NEPTUNE  — orbit r=4.8
+           ══════════════════════════════════════════════════ -->
+      <a-ring radius-inner="4.79" radius-outer="4.805" color="#555"
+        rotation="-90 0 0"
+        material="opacity: 0.12; transparent: true; shader: flat"
+        position="0 0.02 0">
+      </a-ring>
+      <a-entity orbit="duration: 65000" position="0 0.5 0">
+        <a-sphere
+          position="4.8 0 0"
+          radius="0.16"
+          material="color: #4169E1; emissive: #1540a0; emissiveIntensity: 0.35"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 2600; easing: linear"
+        ></a-sphere>
+      </a-entity>
+
+      <!-- ══════════════════════════════════════════════════
+           CURSOR (for raycasting / click detection)
+           ══════════════════════════════════════════════════ -->
+      <a-entity
+        cursor="fuse: false; rayOrigin: mouse"
+        raycaster="objects: [data-planet]; recursive: false"
+      ></a-entity>
+
+    </a-marker>
+    <!-- /hiro-marker -->
+
+  </a-scene>
+</div>
+<!-- /ar-scene-wrapper -->
+
+<!-- ══════════════════════════════════════════════════════════
+     AR HUD (top bar)
+     ══════════════════════════════════════════════════════════ -->
+<div id="hud" role="toolbar" aria-label="AR controls">
+  <button id="exit-btn" class="hud-btn" aria-label="Exit AR">← Exit</button>
+  <span id="hud-title">Solar System AR</span>
+  <div style="width:72px"></div><!-- spacer to centre title -->
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     STATUS BAR
+     ══════════════════════════════════════════════════════════ -->
+<div id="status-bar" role="status" aria-live="polite">
+  <span id="status-txt">
+    <span class="pulse-dot"></span> Initialising…
+  </span>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     HELP TOOLTIP (shown after 8 s without marker)
+     ══════════════════════════════════════════════════════════ -->
+<div id="help-tip" role="note" aria-label="Marker help">
+  📄 Tip: Open the <strong>Hiro marker</strong> image from README.md
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PLANET INFO PANEL (slide-up sheet)
+     ══════════════════════════════════════════════════════════ -->
+<div id="info-panel" role="dialog" aria-modal="true" aria-label="Planet information">
+
+  <!-- Drag handle -->
+  <div class="panel-handle" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <div class="panel-header">
+    <div id="panel-planet-icon" class="panel-planet-icon" aria-hidden="true">🪐</div>
+    <div class="panel-title-group">
+      <div id="panel-planet-name" class="panel-planet-name">Planet</div>
+      <div id="panel-planet-type" class="panel-planet-type">Type</div>
+    </div>
+    <button id="close-panel-btn" aria-label="Close panel">✕</button>
+  </div>
+
+  <!-- Stats grid -->
+  <div id="panel-stats" class="stat-grid" aria-label="Planet statistics"></div>
+
+  <!-- Fun fact -->
+  <div class="fact-section">
+    <div class="fact-label">⚡ Did You Know?</div>
+    <p id="panel-fact" class="fact-text"></p>
+  </div>
+
+  <!-- Moons -->
+  <div id="panel-moons"></div>
+
+</div>
+<!-- /info-panel -->
+
+<!-- App Script (after A-Frame so components register correctly) -->
+<script>
+  // Bridge: forward AR.js marker events to window so script.js can listen
+  document.addEventListener('DOMContentLoaded', () => {
+    const marker = document.getElementById('hiro-marker');
+    if (marker) {
+      marker.addEventListener('markerFound', () =>
+        window.dispatchEvent(new Event('markerFound')));
+      marker.addEventListener('markerLost', () =>
+        window.dispatchEvent(new Event('markerLost')));
+    }
+  });
+</script>
+<script src="script.js"></script>
+
+</body>
+</html>
